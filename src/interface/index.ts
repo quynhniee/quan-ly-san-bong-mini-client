@@ -38,6 +38,7 @@ export interface Supplier {
   phoneNumber: string | undefined;
   address: string | undefined;
   note: string | undefined;
+  taxCode?: string | undefined;
   [key: string]: unknown;
 }
 
@@ -49,6 +50,6 @@ export interface OrderProduct {
 }
 
 export interface Status {
-  status: boolean;
+  id: number;
   name: string;
 }

@@ -22,7 +22,7 @@ import moment from "moment";
 import axios from "axios";
 import AddOrderProductDialog from "./AddOrderProductDialog";
 import { Order, OrderProduct, Product, Status, Supplier } from "../../interface";
-import { listStatus } from "../../interface/default";
+import ClientCtr from "../../ClientCtr";
 
 interface Props {
   open: boolean;
@@ -43,6 +43,7 @@ const EditOrderDialog: React.FC<Props> = ({
   const [showErr, setShowErr] = useState<boolean>(false);
   const [listSupplier, setListSupplier] = useState<Supplier[]>([]);
   const [listEmployee, setListEmployee] = useState<any[]>([])
+  const [listStatus, setListStatus] = useState<Status[]>([])
   const [totalPrice, setTotalPrice] = useState<number | undefined>(0);
   const [addProductDialog, setAddProductDialog] = useState<boolean>(false);
   const [orderProduct, setOrderProduct] = useState<OrderProduct>();
@@ -66,20 +67,25 @@ const EditOrderDialog: React.FC<Props> = ({
   const [employee, setEmployee] = useState<any>('QuynhNN')
 
 
+  const fetchSupplierData = async () => {
+    await ClientCtr.getAllSuppliers().then(response => {
+      setListSupplier(response?.data)
+    })
+  };
+  const fetchEmployeeData = async () => {
+    await ClientCtr.getAllEmployees().then(response => {
+      setListEmployee(response?.data)
+    })
+  };
+  const fetchStatusData = async () => {
+    await ClientCtr.getAllStatuses().then(response => {
+      setListStatus(response?.data)
+    })
+  };
   useEffect(() => {
-    const fetchSupplierData = async () => {
-      const response = await axios.get(
-        "http://54.199.68.197:8081/api/v1/suppliers",
-        {
-          params: {
-            page: 0,
-            size: 100,
-          },
-        }
-      );
-      setListSupplier(response?.data?.data?.data);
-    };
+    fetchEmployeeData()
     fetchSupplierData();
+    fetchStatusData();
   }, []);
 
   useEffect(() => {
@@ -194,27 +200,28 @@ const EditOrderDialog: React.FC<Props> = ({
       };
     });
 
+    // Update order data
     if (order?.id) {
       try {
-        await axios.put(
-          `http://54.199.68.197:8081/api/v1/orders/${order.id}`,
-          {
-            code: orderData?.code,
-            note: orderData?.note,
-            taxType: orderData?.tax,
-            supplier: {
-              id: orderData?.supplier?.id,
-            },
-            products: newData,
-            status: orderData?.status,
-          },
-          {
-            params: {
-              page: 0,
-              size: 1000,
-            },
-          }
-        );
+        // await axios.put(
+        //   `http://54.199.68.197:8081/api/v1/orders/${order.id}`,
+        //   {
+        //     code: orderData?.code,
+        //     note: orderData?.note,
+        //     taxType: orderData?.tax,
+        //     supplier: {
+        //       id: orderData?.supplier?.id,
+        //     },
+        //     products: newData,
+        //     status: orderData?.status,
+        //   },
+        //   {
+        //     params: {
+        //       page: 0,
+        //       size: 1000,
+        //     },
+        //   }
+        // );
         fetchData();
         setOpen(false);
         setSelectedRows([]);
@@ -222,6 +229,7 @@ const EditOrderDialog: React.FC<Props> = ({
         alert(e.response.data.message);
       }
     } else {
+    // Create a new order
       const sendData = {
         ...orderData,
         supplier: {
@@ -373,9 +381,9 @@ const EditOrderDialog: React.FC<Props> = ({
                 <Select
                     id="employee-select"
                     label="Nhân viên nhập hàng"
-                    options={listSupplier.map((item: Supplier) => {
+                    options={listEmployee.map((item: Supplier) => {
                       return {
-                        label: item.name || "",
+                        label: (item.id + ' - ' + item.name) || "",
                         value: item.id.toString(),
                       };
                     })}
@@ -389,7 +397,7 @@ const EditOrderDialog: React.FC<Props> = ({
                     options={listStatus.map((item: Status) => {
                       return {
                         label: item.name || "",
-                        value: item.status.toString(),
+                        value: item.id.toString(),
                       };
                     })}
                     value={status}

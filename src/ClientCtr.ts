@@ -11,6 +11,9 @@ const ClientCtr = {
     deleteProductsById: (arr: number[]) => axios.delete(baseURL + '/product', {data: arr}),
     getAllCategories: () => axios.get(baseURL + '/category'),
     getProductsByNameContaining: (key: string) => axios.get(baseURL + '/product?key=' + key),
+    getAllEmployees: () => axios.get(baseURL + '/employee'),
+    getAllSuppliers: () => axios.get(baseURL + '/supplier'),
+    getAllStatuses: () => axios.get(baseURL + '/status'),
 }
 
 export default ClientCtr;
