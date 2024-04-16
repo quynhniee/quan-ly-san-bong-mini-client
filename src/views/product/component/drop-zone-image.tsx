@@ -13,7 +13,7 @@ const DropZoneImage = ({ setImage }: { setImage: Function }) => {
             errorOverlayText="Chỉ hỗ trợ định dạng File gif, jpg, jpeg, png"
             overlayText="Thả File vào đây để tải lên"
             type="image"
-            accept="image/gif, image/jpg ,image/jpeg, image/png, image/webp"
+            accept="image/gif, image/jpg ,image/jpeg, image/png, image/webp" 
             onDropAccepted={async (acceptedFiles: File[]) => {
               const url = URL.createObjectURL(acceptedFiles[0]);
               setImage(url);

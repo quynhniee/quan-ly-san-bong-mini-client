@@ -60,7 +60,7 @@ export default memo(function SelectedMediaCard(props: ISelectedMediaCard) {
             type="file"
             id="upload-file"
             style={{ display: "none" }}
-            accept="image/gif, image/jpg ,image/jpeg, image/png"
+            accept="image/gif, image/jpg ,image/jpeg, image/png, image/webp"
             multiple={false}
             onChange={(e) => {
               const url = URL.createObjectURL((e.target.files as any)[0]);
