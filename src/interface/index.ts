@@ -12,6 +12,39 @@ export interface Order {
   code: string;
 }
 
+export interface ImportOrder {
+  id: number;
+  code: string;
+  payment: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  supplier: Supplier;
+  status: Status;
+  employee: Employee;
+  importOrderProducts?: ImportOrderProduct[];
+  note?: string;
+}
+
+export interface ImportOrderProduct {
+  id: number | undefined;
+  quantity: number;
+  product: Product;
+  importOrder?: ImportOrder;
+  importPrice: number;
+}
+
+export interface Employee {
+  id: number;
+  name: string;
+  username: string;
+  password: string;
+  phoneNumber: string;
+  dateOfBirth: Date;
+  address: string;
+  homeTown: string;
+  gender: string;
+}
+
 export interface Category {
   id: number;
   name: string;
@@ -28,6 +61,7 @@ export interface Product {
   name: string;
   price: number;
   stock: number;
+  deleted: boolean;
 }
 
 export interface Supplier {

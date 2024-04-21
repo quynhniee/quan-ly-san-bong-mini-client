@@ -7,41 +7,41 @@ import {
   ButtonGroup,
   InlineStack,
   Checkbox,
-  BlockStack,
   Box,
 } from "@shopify/polaris";
-import axios from "axios";
 import moment from "moment";
-import { Order } from "../../interface";
+import { ImportOrder, Order } from "../../interface";
 import EditOrderDialog from "./EditOrderDialog";
 import { useNavigate } from "react-router-dom";
 import ModalDeleteProduct from "../product/modal/modal-delete-product";
 import { useModal } from "../../hook/useModal";
 import { EModal } from "../../constants";
+import ClientCtr from "../../ClientCtr";
 
 const OrdersPage = () => {
   const { openModal, state: stateModal } = useModal();
   const [open, setOpen] = useState<boolean>(false);
-  const [items, setItems] = useState<Array<Order>>([]);
-  const [displayOrders, setDisplayOrders] = useState<Array<Order>>([]);
+  const [items, setItems] = useState<Array<ImportOrder>>([]);
+  const [displayOrders, setDisplayOrders] = useState<Array<ImportOrder>>([]);
   const [order, setOrder] = useState<any>();
   const [page, setPage] = useState<number>(0);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
-  const itemsPerPage = 10;
+  const itemsPerPage = 1000;
 
   const navigate = useNavigate();
 
   const headings = [
     "",
-    <div style={{ textAlign: "center" }}>STT</div>,
+    <div style={{ textAlign: "center" }}>ID</div>,
     <div style={{ textAlign: "center" }}>Mã đơn hàng</div>,
     <div style={{ textAlign: "left" }}>Ngày tạo</div>,
     <div style={{ textAlign: "left" }}>Nhà cung cấp</div>,
     <div style={{ textAlign: "left" }}>Trạng thái</div>,
+    <div style={{ textAlign: "left" }}>Cập nhật lúc</div>,
   ];
 
-  const formatToRowData = (data: Order[]) => {
-    return data.map((item: Order, index: number) => [
+  const formatToRowData = (data: ImportOrder[]) => {
+    return data.map((item: ImportOrder, index: number) => [
       <Checkbox
         name=""
         value=""
@@ -59,26 +59,24 @@ const OrdersPage = () => {
         }}
       />,
       <div style={{ textAlign: "center" }}>
-        {page * itemsPerPage + index + 1}
+        {item.id}
       </div>,
-      <div style={{ textAlign: "center" }}>{item.id}</div>,
+      <div style={{ textAlign: "center" }}>{item.code}</div>,
       moment(item.createdAt).format("YYYY-MM-DD"),
       item.supplier.name,
-      item.status ? "Đã thanh toán" : "Chưa thanh toán",
+      item.status.name,
+      <div>{ moment(item.updatedAt).format("hh:mm A / YYYY-MM-DD")}</div>
     ]);
   };
 
-  const fetchData = () => {
-    axios
-      .get("http://54.199.68.197:8081/api/v1/orders", {params: {page: 0, size: 10000}})
-      .then((res) => {
-        if (res.status === 200) {
-          const orderList = res?.data?.data?.data;
-          setItems(orderList);
-          setDisplayOrders(orderList.slice(0, itemsPerPage));
-        }
-      })
-      .catch((e) => console.error(e));
+  // Get all orders data
+  const fetchData = async () => {
+    await ClientCtr.getAllImportOrders().then((response) => {
+      const orderList = response?.data;
+      setItems(orderList);
+      setDisplayOrders(orderList.slice(0, itemsPerPage));
+    }).catch((error) => {alert(error)});
+    
   };
 
   useEffect(() => {
@@ -141,26 +139,7 @@ const OrdersPage = () => {
           truncate
         />
       </Card>
-      <div
-        style={{ display: "flex", justifyContent: "center", marginTop: "20px" }}
-      >
-        <ButtonGroup>
-          <Button
-            disabled={page === 0}
-            onClick={() => handleChangePage(-1)}
-            id="previous-page"
-          >
-            Trang trước
-          </Button>
-          <Button
-            disabled={items.length < itemsPerPage * (page + 1)}
-            onClick={() => handleChangePage(1)}
-            id="next-page"
-          >
-            Trang tiếp theo
-          </Button>
-        </ButtonGroup>
-      </div>
+      
       {selectedRows.length > 0 && (
         <div
           style={{

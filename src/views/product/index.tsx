@@ -98,11 +98,9 @@ const formatToTableRow = (
 const ProductsManagement = () => {
   const navigate = useNavigate();
   const { openModal, state: stateModal } = useModal();
-  const [listCategory, setListCategory] = useState<Category[]>([]);
   const [sortedRows, setSortedRows] = useState<TableData[][]>([]);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
   const [searchProduct, setSearchProduct] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
 
   // Fetch data on initialization
   const fetchProducts = async () => {
@@ -115,17 +113,10 @@ const ProductsManagement = () => {
       .catch((e) => console.error(e));
   };
 
-  const fetchCategories = async () => {
-    ClientCtr.getAllCategories()
-      .then((res) => {
-        setListCategory(res?.data || []);
-      })
-      .catch((e) => console.error(e));
-  };
 
+  
   useEffect(() => {
     fetchProducts();
-    fetchCategories();
   }, [stateModal[EModal.MODAL_EDIT_PRODUCT]?.active]);
 
   const handleSort = (index: number, direction: "ascending" | "descending") =>
@@ -153,15 +144,6 @@ const ProductsManagement = () => {
       .catch((e) => console.error(e));
   };
 
-  const filteredRows = sortedRows.filter((row) => {
-    return (
-      row[1]?.toString().toLowerCase().includes(searchProduct.toLowerCase()) &&
-      (selectedCategories.length
-        ? selectedCategories.find((category) => category.id === Number(row[7]))
-        : true)
-    );
-  });
-
   useEffect(() => {
     const rows: NodeListOf<HTMLElement> = document.querySelectorAll(
       ".Polaris-DataTable__TableRow"
@@ -177,11 +159,11 @@ const ProductsManagement = () => {
         ) {
         } else {
           setSelectedRows((prev: number[]) =>
-            prev.find((rowId: any) => rowId === filteredRows[index][0])
+            prev.find((rowId: any) => rowId === sortedRows[index][0])
               ? prev.filter(
-                  (rowId: any) => rowId !== Number(filteredRows[index][0])
+                  (rowId: any) => rowId !== Number(sortedRows[index][0])
                 )
-              : [...prev, Number(filteredRows[index][0])]
+              : [...prev, Number(sortedRows[index][0])]
           );
         }
       };
@@ -189,11 +171,11 @@ const ProductsManagement = () => {
       row.ondblclick = (e) => {
         e.preventDefault();
 
-        openModal(EModal.MODAL_EDIT_PRODUCT, { data: filteredRows[index] });
+        openModal(EModal.MODAL_EDIT_PRODUCT, { data: sortedRows[index] });
       };
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredRows, selectedRows]);
+  }, [sortedRows, selectedRows]);
 
   return (
     <Page
@@ -228,7 +210,7 @@ const ProductsManagement = () => {
 
           <Button
             onClick={() => setSelectedRows([])}
-            disabled={selectedRows.length === filteredRows.length}
+            disabled={selectedRows.length === sortedRows.length}
             variant="secondary"
           >
             Chọn tất cả
@@ -246,7 +228,7 @@ const ProductsManagement = () => {
             headings={defaultTable.map(({ heading }) => heading)}
             columnContentTypes={defaultTable.map(({ type }) => type)}
             sortable={defaultTable.map(({ sortable }) => sortable)}
-            rows={formatToTableRow(filteredRows, selectedRows, setSelectedRows)}
+            rows={formatToTableRow(sortedRows, selectedRows, setSelectedRows)}
             fixedFirstColumns={0}
             firstColumnMinWidth="500px"
             truncate

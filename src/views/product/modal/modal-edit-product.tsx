@@ -16,10 +16,10 @@ import { useEffect, useState } from "react";
 import { EModal } from "../../../constants";
 import { useModal } from "../../../hook/useModal";
 import { Category, Product } from "../../../interface";
-import { CategoryListItem } from "../CategoryListItem";
 import DropZoneImage from "../component/drop-zone-image";
 import SelectedMediaCard from "../component/selected-media-card";
 import ClientCtr from "../../../ClientCtr";
+import { CategoryListItem } from '../CategoryListItem';
 
 const EErrorText = {
   Empty: (name: string) => `${name} không được để trống.`,

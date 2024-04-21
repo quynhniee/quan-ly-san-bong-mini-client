@@ -7,14 +7,14 @@ import {
   Modal,
   Grid,
 } from "@shopify/polaris";
-import axios from "axios";
-import { Category, OrderProduct, Product } from "../../interface";
+import { Category, ImportOrderProduct, Product } from "../../interface";
+import ClientCtr from '../../ClientCtr';
 
 interface AddOrderProductDialogProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  handleUpdateItem: (orderProduct: OrderProduct, id: number) => void;
-  data: OrderProduct;
+  handleUpdateItem: (orderProduct: ImportOrderProduct, id?: number) => void;
+  data: ImportOrderProduct | undefined;
 }
 
 const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
@@ -24,67 +24,44 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
   data,
 }: AddOrderProductDialogProps) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [orderProduct, setOrderProduct] = useState<OrderProduct>(data);
-  const [product, setProduct] = useState<Product | null>(data?.product);
+  const [product, setProduct] = useState<Product | undefined>(data?.product);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [category, setCategory] = useState<number | null>(
-    data?.product?.category?.id || null
+  const [category, setCategory] = useState<number>(
+    data?.product?.category?.id || 1
   );
   const [displayProducts, setDisplayProducts] = useState<Product[]>(
     data?.id ? [data?.product] : []
   );
+  const [importPrice, setImportPrice] = useState<number>(data?.importPrice || 0)
+  const [quantity, setQuantity] = useState<number>(data?.quantity || 0)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const response = await axios.get(
-        "http://54.199.68.197:8081/api/v1/products"
-      );
-      setProducts(response?.data?.data?.data);
-      const newProducts = response?.data?.data?.data.filter(
-        (item: Product) => item.category.id == category
-      );
+  const fetchProductsData = async () => {
+    if (category) {
+      const response = await ClientCtr.getProductByCategory(category)
+  
+      const newProducts = response?.data
+      setProducts(newProducts);
       setDisplayProducts(newProducts);
       setProduct(newProducts[0]);
-      setOrderProduct({
-        id: data?.id,
-        product: newProducts[0],  
-        quantity: data?.quantity,
-        price: data?.price,
-      })
-    };
-    fetchData();
+
+    }
+  };
+
+  const fetchCategoriesData = async () => {
+    await ClientCtr.getAllCategories().then((response) => {
+      setCategories(response?.data)
+      if (!data) setCategory(response?.data[0].id.toString())
+    })
+  };
+
+  useEffect(() => {
+    fetchProductsData();
   }, [category]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await axios.get(
-        "http://54.199.68.197:8081/api/v1/category",
-        {
-          params: {
-            page: 0,
-            size: 1000,
-          },
-        }
-      );
-      setCategories(response?.data?.data?.data);
-      if (!data) setCategory(response?.data?.data?.data[0].id.toString())
-    };
-    fetchData();
+    fetchProductsData();
+    fetchCategoriesData();
   }, []);
-
-  const handleChangeQuantity = (value: string) => {
-    setOrderProduct({
-      ...orderProduct,
-      quantity: parseInt(value),
-    });
-  };
-
-  const handleChangePrice = (value: string) => {
-    setOrderProduct({
-      ...orderProduct,
-      price: parseInt(value),
-    });
-  }
 
   const handleChangeProduct = (value: string) => {
     const selectedProduct = products.find(
@@ -92,13 +69,24 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
     );
     if (selectedProduct) {
       setProduct(selectedProduct);
-      setOrderProduct({ ...orderProduct, product: selectedProduct});
     }
   };
 
   const handleChangeCategory = (value: string) => {
     setCategory(+value);
   };
+
+  const onSubmitHandle = () => {
+    if (product && quantity > 0 && importPrice > 0) {
+      const newOrder = {
+        id: data?.id || undefined,
+        importPrice,
+        product,
+        quantity
+      }
+      handleUpdateItem(newOrder, data?.id)
+    }
+  }
 
   return (
     <Modal
@@ -108,7 +96,7 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
       title={data?.id ? "Sửa thông tin mặt hàng" : "Thêm Mặt Hàng"}
       primaryAction={{
         content: data?.id ? "Lưu" : "Thêm",
-        onAction: () => handleUpdateItem(orderProduct, data?.id),
+        onAction: onSubmitHandle,
       }}
       secondaryActions={[
         {
@@ -117,7 +105,7 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
         },
       ]}
     >
-      <Form onSubmit={() => handleUpdateItem(orderProduct, data?.id)}>
+      <Form onSubmit={onSubmitHandle}>
         <Modal.Section>
           <FormLayout>
             <Select
@@ -143,11 +131,11 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
               disabled={data?.id ? true : false}
             />
              <TextField
-              id="price"
+              id="importPrice"
               label="Giá"
               type="number"
-              value={orderProduct?.price ? orderProduct?.price?.toString() : ""}
-              onChange={value => handleChangePrice(value)}
+              value={importPrice.toString()}
+              onChange={value => setImportPrice(+value)}
               autoComplete="off"
             />
             <TextField
@@ -155,10 +143,9 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
               label="Số Lượng"
               type="number"
               min={1}
-              value={
-                orderProduct?.quantity ? orderProduct?.quantity?.toString() : ""
+              value={ quantity.toString()
               }
-              onChange={(value) => handleChangeQuantity(value)}
+              onChange={(value) => setQuantity(+value)}
               disabled={!category}
               autoComplete="off"
             />
