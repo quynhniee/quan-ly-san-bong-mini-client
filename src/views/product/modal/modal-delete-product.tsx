@@ -1,7 +1,7 @@
 import { BlockStack, Text, Modal } from "@shopify/polaris";
 import { useModal } from "../../../hook/useModal";
 import { EModal } from "../../../constants";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ClientCtr from "../../../ClientCtr";
 
 const ModalDeleteProduct = ({
@@ -21,22 +21,41 @@ const ModalDeleteProduct = ({
     setSelectedRows([]);
   };
 
-  const handleSubmit = () => {
+  const handleDeleteOrder = async (arr: number[]) => {
+    await ClientCtr.deleteImportOrdersById(arr);
+    setSelectedRows([]);
+  }
+
+  const handleSubmit = async () => {
     setIsLoading(true);
-    handleDeleteProduct2(selectedRows).then(() => {
-      setIsLoading(false);
-      handleCloseModal();
-    });
+    if (type === 'orders') {
+      await handleDeleteOrder(selectedRows).then(() => {
+        setIsLoading(false);
+        handleCloseModal();
+      })
+
+    }
+    else if (type === 'products') {
+      await handleDeleteProduct2(selectedRows).then(() => {
+        setIsLoading(false);
+        handleCloseModal();
+      });
+    }
   };
 
   const handleCloseModal = () => {
     closeModal(EModal.MODAL_DELETE_PRODUCT);
   };
 
+  useEffect(() => {
+    setIsLoading(false);
+    console.log(state)
+  }, [state])
+
   return (
     <Modal
       open={state[EModal.MODAL_DELETE_PRODUCT]?.active}
-      title={`Xác nhận xoá ${selectedRows.length} mặt hàng`}
+      title={`Xác nhận xoá ${selectedRows.length} ${type === 'orders' ? 'đơn nhập hàng' : 'mặt hàng'}`}
       onClose={handleCloseModal}
       primaryAction={{
         content: "Xác nhận",
@@ -55,7 +74,7 @@ const ModalDeleteProduct = ({
       <Modal.Section>
         <BlockStack gap={"300"}>
           <Text as="p" variant="bodyMd">
-            Mặt hàng đã xoá sẽ không thể khôi phục lại.
+            {type === 'orders' ? 'Đơn' :'Mặt'} hàng đã xoá sẽ không thể khôi phục lại.
           </Text>
           <Text as="p" variant="bodyMd">
             Tiếp tục xoá?

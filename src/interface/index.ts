@@ -56,7 +56,7 @@ export interface Product {
     name: string;
   };
   description: string;
-  id: number | undefined;
+  id: number;
   image: string;
   name: string;
   price: number;

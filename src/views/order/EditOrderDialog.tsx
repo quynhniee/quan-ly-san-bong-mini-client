@@ -198,66 +198,6 @@ const EditOrderDialog: React.FC<Props> = ({
     await fetchData()
     setOpen(false);
     setSelectedRows([]);
-    
-
-    // // Update order data
-    // if (order?.id) {
-    //   try {
-    //     // await axios.put(
-    //     //   `http://54.199.68.197:8081/api/v1/orders/${order.id}`,
-    //     //   {
-    //     //     code: orderData?.code,
-    //     //     note: orderData?.note,
-    //     //     taxType: orderData?.tax,
-    //     //     supplier: {
-    //     //       id: orderData?.supplier?.id,
-    //     //     },
-    //     //     products: newData,
-    //     //     status: orderData?.status,
-    //     //   },
-    //     //   {
-    //     //     params: {
-    //     //       page: 0,
-    //     //       size: 1000,
-    //     //     },
-    //     //   }
-    //     // );
-    //     fetchData();
-    //     setOpen(false);
-    //     setSelectedRows([]);
-    //   } catch (e: any) {
-    //     alert(e.response.data.message);
-    //   }
-    // } else {
-    // // Create a new order
-    //   const sendData = {
-    //     ...orderData,
-    //     supplier: {
-    //       id: orderData?.supplier.id,
-    //     },
-    //     products: (orderData.importOrderProducts as Array<ImportOrderProduct>).map(
-    //       (item: ImportOrderProduct) => {
-    //         return {
-    //           id: item.product.id,
-    //           quantity: item.quantity,
-    //         };
-    //       }
-    //     ),
-    //     status: false,
-    //   };
-    //   try {
-    //     const response = await axios.post(
-    //       "http://54.199.68.197:8081/api/v1/orders",
-    //       sendData
-    //     );
-    //     if (response?.data?.status === 200) {
-    //       fetchData();
-    //       setOpen(false);
-    //     }
-    //   } catch (e: any) {
-    //     alert(e.response.data.message);
-    //   }
-    // }
   };
 
   return (

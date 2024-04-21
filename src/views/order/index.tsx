@@ -94,13 +94,6 @@ const OrdersPage = () => {
     setOpen(true);
   };
 
-  const handleChangePage = (event: number) => {
-    const newPage = page + event;
-    setPage(newPage);
-    setDisplayOrders(
-      items.slice(newPage * itemsPerPage, (newPage + 1) * itemsPerPage)
-    );
-  };
 
   return (
     <Page

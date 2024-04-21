@@ -100,12 +100,14 @@ const ProductsManagement = () => {
   const { openModal, state: stateModal } = useModal();
   const [sortedRows, setSortedRows] = useState<TableData[][]>([]);
   const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const [displayRows, setDisplayRows] = useState<Product[]>([])
   const [searchProduct, setSearchProduct] = useState("");
 
   // Fetch data on initialization
   const fetchProducts = async () => {
     ClientCtr.getAllProducts()
       .then((res) => {
+        setDisplayRows(res.data)
         setSortedRows(
           sortTable(formatToDataTable(res?.data || []), 0, "ascending")
         );
@@ -113,11 +115,9 @@ const ProductsManagement = () => {
       .catch((e) => console.error(e));
   };
 
-
-  
   useEffect(() => {
     fetchProducts();
-  }, [stateModal[EModal.MODAL_EDIT_PRODUCT]?.active]);
+  }, [stateModal[EModal.MODAL_EDIT_PRODUCT]?.active, selectedRows]);
 
   const handleSort = (index: number, direction: "ascending" | "descending") =>
     sortedRows?.length &&
@@ -130,13 +130,17 @@ const ProductsManagement = () => {
   };
 
   const handleSubmit = async () => {
-    await handleDeleteProduct2(selectedRows).then(() => fetchProducts());
+    openModal(EModal.MODAL_DELETE_PRODUCT, {
+      data: { selectedRows, setSelectedRows },
+    })
+    // await handleDeleteProduct2(selectedRows).then(() => fetchProducts());
   };
 
   // Search products by name
   const handleSearch = async (key: string) => {
     await ClientCtr.getProductsByNameContaining(key)
       .then((res) => {
+        setDisplayRows(res.data)
         setSortedRows(
           sortTable(formatToDataTable(res?.data || []), 0, "ascending")
         );
@@ -209,7 +213,7 @@ const ProductsManagement = () => {
           />
 
           <Button
-            onClick={() => setSelectedRows([])}
+            onClick={() => setSelectedRows(displayRows.map(row => row.id))}
             disabled={selectedRows.length === sortedRows.length}
             variant="secondary"
           >

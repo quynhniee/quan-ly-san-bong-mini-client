@@ -19,6 +19,7 @@ const ClientCtr = {
     getImportOrder: (id: number) => axios.get(baseURL + '/order/' + id),
     saveImportOrder: (o: ImportOrder) => axios.post(baseURL + '/order', o),
     getImportOrderByCodeContaining: (key: string) => axios.get(baseURL + '/order?key=' + key),
+    deleteImportOrdersById: (arr: number[]) => axios.delete(baseURL + '/order', {data: arr}),
 }
 
 export default ClientCtr;
