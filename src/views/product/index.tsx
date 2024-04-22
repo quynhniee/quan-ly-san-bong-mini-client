@@ -107,7 +107,7 @@ const ProductsManagement = () => {
   const fetchProducts = async () => {
     ClientCtr.getAllProducts()
       .then((res) => {
-        setDisplayRows(res.data)
+        setDisplayRows(res.data?.reverse())
         setSortedRows(
           sortTable(formatToDataTable(res?.data || []), 0, "ascending")
         );

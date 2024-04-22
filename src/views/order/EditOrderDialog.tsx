@@ -20,7 +20,13 @@ import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import moment from "moment";
 import axios from "axios";
 import AddOrderProductDialog from "./AddOrderProductDialog";
-import { Employee, ImportOrder, ImportOrderProduct, Status, Supplier } from "../../interface";
+import {
+  Employee,
+  ImportOrder,
+  ImportOrderProduct,
+  Status,
+  Supplier,
+} from "../../interface";
 import ClientCtr from "../../ClientCtr";
 
 interface Props {
@@ -40,14 +46,16 @@ const EditOrderDialog: React.FC<Props> = ({
 }) => {
   const [showErr, setShowErr] = useState<boolean>(false);
   const [listSupplier, setListSupplier] = useState<Supplier[]>([]);
-  const [listEmployee, setListEmployee] = useState<Employee[]>([])
-  const [listStatus, setListStatus] = useState<Status[]>([])
+  const [listEmployee, setListEmployee] = useState<Employee[]>([]);
+  const [listStatus, setListStatus] = useState<Status[]>([]);
   const [payment, setPayment] = useState<number>(0);
   const [addProductDialog, setAddProductDialog] = useState<boolean>(false);
   const [orderProduct, setOrderProduct] = useState<ImportOrderProduct>();
-  const [importOrderProducts, setImportOrderProducts] = useState<ImportOrderProduct[]>(order?.importOrderProducts || [])
-  const [code, setCode] = useState<string>(order?.code)
-  const [note, setNote] = useState<string>(order?.note || '')
+  const [importOrderProducts, setImportOrderProducts] = useState<
+    ImportOrderProduct[]
+  >(order?.importOrderProducts || []);
+  const [code, setCode] = useState<string>(order?.code || '');
+  const [note, setNote] = useState<string>(order?.note || "");
   const [orderData, setOrderData] = useState<ImportOrder>(
     order || {
       status: false,
@@ -61,42 +69,49 @@ const EditOrderDialog: React.FC<Props> = ({
       createdAt: moment().format("YYYY-MM-DD"),
     }
   );
-  console.log(orderData)
-  const [supplier, setSupplier] = useState<Supplier>(
-    order?.supplier
-  );
-  const [status, setStatus] = useState<Status>(
-    order?.status 
-  );
-  const [employee, setEmployee] = useState<Employee>(order?.employee)
+
+  const [supplier, setSupplier] = useState<Supplier>(order?.supplier);
+  const [status, setStatus] = useState<Status>(order?.status);
+  const [employee, setEmployee] = useState<Employee>(order?.employee);
+  const [errorCodeText, setErrorCodeText] = useState<string>('')
+  const [errorNoteText, setErrorNoteText] = useState<string>('')
+  const [errorEmployeeText, setErrorEmployeeText] = useState<string>('')
+  const [errorSupplierText, setErrorSupplierText] = useState<string>('')
+  const [errorStatusText, setErrorStatusText] = useState<string>('')
+
+  const disabled = status?.id === 1;
+  console.log(disabled);
 
   const fetchImportOrderData = async (id: number) => {
-    await ClientCtr.getImportOrder(id).then((response) => {
-      setOrderData(response?.data)
-    }).catch((error) => {alert(error.message)});
-  }
-
+    await ClientCtr.getImportOrder(id)
+      .then((response) => {
+        setOrderData(response?.data);
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
+  };
 
   const fetchSupplierData = async () => {
-    await ClientCtr.getAllSuppliers().then(response => {
-      setListSupplier(response?.data)
-    })
+    await ClientCtr.getAllSuppliers().then((response) => {
+      setListSupplier(response?.data);
+    });
   };
   const fetchEmployeeData = async () => {
-    await ClientCtr.getAllEmployees().then(response => {
-      setListEmployee(response?.data)
-    })
+    await ClientCtr.getAllEmployees().then((response) => {
+      setListEmployee(response?.data);
+    });
   };
   const fetchStatusData = async () => {
-    await ClientCtr.getAllStatuses().then(response => {
-      setListStatus(response?.data)
-    })
+    await ClientCtr.getAllStatuses().then((response) => {
+      setListStatus(response?.data);
+    });
   };
   useEffect(() => {
     // if (order) {
     //   fetchImportOrderData(order.id)
     // }
-    fetchEmployeeData()
+    fetchEmployeeData();
     fetchSupplierData();
     fetchStatusData();
   }, []);
@@ -109,7 +124,12 @@ const EditOrderDialog: React.FC<Props> = ({
     return importOrderProducts.map((item: ImportOrderProduct) => [
       <Box id="product-name-and-image">
         <Text id="product-name" as="p">
-          {item.product.name} {item.product.deleted && <Badge tone='critical' size='small'>Deleted</Badge>}
+          {item.product.name}{" "}
+          {item.product.deleted && (
+            <Badge tone="critical" size="small">
+              Deleted
+            </Badge>
+          )}
         </Text>
         <Thumbnail source={item.product.image} alt="image" />
       </Box>,
@@ -120,11 +140,13 @@ const EditOrderDialog: React.FC<Props> = ({
       <div style={{ minWidth: "70px" }}>
         <ButtonGroup>
           <Button
+            disabled={disabled}
             icon={EditIcon}
             onClick={() => handleClickEdit(item)}
             id="edit-order-product-btn"
           />
           <Button
+            disabled={disabled}
             icon={DeleteIcon}
             tone="critical"
             onClick={() => handleClickDelete(item)}
@@ -143,32 +165,107 @@ const EditOrderDialog: React.FC<Props> = ({
     );
   };
 
+  const selectionContainer = (selection: JSX.Element, errorText: string) => {
+    return <BlockStack>
+      {selection}
+      {errorText && errorText !== '' && (
+              <div className="Polaris-Labelled__Error">
+                <div id=":r73:Error" className="Polaris-InlineError">
+                  <div className="Polaris-InlineError__Icon">
+                    <span className="Polaris-Icon">
+                      <svg
+                        viewBox="0 0 20 20"
+                        className="Polaris-Icon__Svg"
+                        focusable="false"
+                        aria-hidden="true"
+                      >
+                        <path d="M10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75Z"></path>
+                        <path d="M11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path>
+                        <path
+                          fill-rule="evenodd"
+                          d="M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Zm-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z"
+                        ></path>
+                      </svg>
+                    </span>
+                  </div>
+                  {errorText}
+                </div>
+              </div>
+            )}
+    </BlockStack>
+  }
+
+  const validateData = () : boolean => {
+    let valid = true
+    if (importOrderProducts.length === 0) {
+      setShowErr(true);
+      valid = false
+    }
+    if (!code || code.trim() === '') {
+      setErrorCodeText("Mã vận đơn không được để trống");
+      valid = false
+    }
+    else {
+      setErrorCodeText('')
+    }
+
+    if (note.length > 500) {
+      setErrorNoteText("Ghi chú không được vượt quá 500 ký tự");
+      valid = false
+    }
+    else {
+      setErrorNoteText('')
+    }
+
+    if (!supplier) {
+      setErrorSupplierText("Nhà cung cấp không được để trống")
+      valid = false
+    }
+    else {
+      setErrorSupplierText('')
+    }
+
+    if (!employee) {
+      setErrorEmployeeText("Nhân viên không được để trống")
+      valid = false
+    }
+    else {
+      setErrorEmployeeText('')
+    }
+
+    if (!status) {
+      setErrorStatusText("Trạng thái không được để trống")
+      valid = false
+    }
+    else {
+      setErrorStatusText('')
+    }
+    return valid
+  }
 
   const handleUpdateItem = (data: ImportOrderProduct, id?: number) => {
     if (data?.product && data?.quantity) {
       setShowErr(false);
       setAddProductDialog(false);
-      let isExist = false;
+
       const newOrderProducts = importOrderProducts?.map(
         (item: ImportOrderProduct) => {
-          if (item.product.id === data.product.id || item.id === id) {
-            isExist = true;
-            return data;
+          if (item.product.id === data.product.id) {
+            return item && data;
           }
           return item;
         }
       );
-      isExist ? setImportOrderProducts(newOrderProducts) : setImportOrderProducts(importOrderProducts.concat(data))
-      
-
-  
+      orderProduct
+        ? setImportOrderProducts(newOrderProducts)
+        : setImportOrderProducts(importOrderProducts.concat(data));
     } else {
       alert("Vui lòng điền đầy đủ thông tin");
     }
   };
 
   const handleClickDelete = (item: ImportOrderProduct) => {
-    setImportOrderProducts(importOrderProducts.filter(o => o.id !== item.id))
+    setImportOrderProducts(importOrderProducts.filter((o) => o.id !== item.id));
   };
 
   const handleClickEdit = (item: ImportOrderProduct) => {
@@ -177,25 +274,25 @@ const EditOrderDialog: React.FC<Props> = ({
   };
 
   const handleSubmit = async () => {
-    if (importOrderProducts.length === 0) {
-      setShowErr(true);
-      return;
+    if (!validateData()) {
+      return
     }
+
 
     const newOrder = {
       id: order?.id,
-      code, 
+      code,
       payment,
       employee,
       supplier,
       status,
       note,
-      importOrderProducts
-    }
+      importOrderProducts,
+    };
 
-    await ClientCtr.saveImportOrder(newOrder)
+    await ClientCtr.saveImportOrder(newOrder);
 
-    await fetchData()
+    await fetchData();
     setOpen(false);
     setSelectedRows([]);
   };
@@ -218,6 +315,7 @@ const EditOrderDialog: React.FC<Props> = ({
         primaryAction={{
           content: "Lưu",
           onAction: handleSubmit,
+          disabled
         }}
         secondaryActions={[
           {
@@ -248,11 +346,13 @@ const EditOrderDialog: React.FC<Props> = ({
                       value={code}
                       onChange={(e) => setCode(e)}
                       autoComplete="off"
+                      error={errorCodeText}
+                      disabled={disabled}
                       id="delivery-code"
                     />
                   </Grid.Cell>
                 </Grid>
-                <Select
+                {selectionContainer(<Select
                   id="supplier-select"
                   label="Nhà cung cấp"
                   options={listSupplier.map((item: Supplier) => {
@@ -264,7 +364,9 @@ const EditOrderDialog: React.FC<Props> = ({
                   value={JSON.stringify(supplier)}
                   onChange={(value) => setSupplier(JSON.parse(value))}
                   placeholder="Chọn nhà cung cấp"
-                />
+                  disabled={disabled}
+                />, errorSupplierText)}
+                
                 <TextField
                   id="note"
                   label="Ghi chú"
@@ -274,46 +376,47 @@ const EditOrderDialog: React.FC<Props> = ({
                   autoComplete="off"
                   maxLength={200}
                   showCharacterCount
+                  disabled={disabled}
                 />
               </FormLayout>
             </Grid.Cell>
             <Grid.Cell columnSpan={{ xs: 6, md: 2, lg: 4 }}>
-              <BlockStack gap={'400'}>
-                <Select
-                    id="employee-select"
-                    label="Nhân viên nhập hàng"
-                    options={listEmployee.map((item: Employee) => {
-                      return {
-                        label: (item.id + ' - ' + item.name) || "",
-                        value: JSON.stringify(item),
-                      };
-                    })}
-                    value={JSON.stringify(employee)}
-                    onChange={(value) => setEmployee(JSON.parse(value))}
-                    placeholder="Chọn nhân viên"
-                  />
-                <Select
-                    id="status-select"
-                    label="Trạng thái đơn hàng"
-                    options={listStatus.map((item: Status) => {
-                      return {
-                        label: item.name || "",
-                        value: JSON.stringify(item),
-                      };
-                    })}
-                    value={JSON.stringify(status)}
-                    onChange={(value) => setStatus(JSON.parse(value))}
-                    placeholder="Chọn trạng thái"
-                  />
+              <BlockStack gap={"400"}>
+                {selectionContainer(<Select
+                  id="employee-select"
+                  label="Nhân viên nhập hàng"
+                  options={listEmployee.map((item: Employee) => {
+                    return {
+                      label: item.id + " - " + item.name || "",
+                      value: JSON.stringify(item),
+                    };
+                  })}
+                  value={JSON.stringify(employee)}
+                  onChange={(value) => setEmployee(JSON.parse(value))}
+                  placeholder="Chọn nhân viên"
+                  disabled={disabled}
+                />, errorEmployeeText)}
                 
+                {selectionContainer(<Select
+                  id="status-select"
+                  label="Trạng thái đơn hàng"
+                  options={listStatus.map((item: Status) => {
+                    return {
+                      label: item.name || "",
+                      value: JSON.stringify(item),
+                    };
+                  })}
+                  value={JSON.stringify(status)}
+                  onChange={(value) => setStatus(JSON.parse(value))}
+                  placeholder="Chọn trạng thái"
+                  disabled={disabled}
+                />, errorStatusText)}
+                
+
                 <TextField
                   id="total-price"
                   label="Tổng hóa đơn"
-                  value={
-                    payment
-                      ? (payment).toString()
-                      : "0"
-                  }
+                  value={payment ? payment.toString() : "0"}
                   disabled
                   autoComplete=""
                 />
@@ -326,11 +429,16 @@ const EditOrderDialog: React.FC<Props> = ({
                     setAddProductDialog(true);
                     setOrderProduct(undefined);
                   }}
+                  disabled={disabled}
                   id="add-order-product-btn"
                 >
                   Thêm mặt hàng
                 </Button>
-                {showErr && <Text tone="critical" as="p">Vui lòng nhập sản phẩm</Text>}
+                {showErr && (
+                  <Text tone="critical" as="p">
+                    Vui lòng nhập sản phẩm
+                  </Text>
+                )}
               </InlineStack>
               <DataTable
                 columnContentTypes={[

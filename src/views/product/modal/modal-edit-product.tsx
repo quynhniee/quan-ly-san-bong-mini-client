@@ -80,7 +80,7 @@ const ProductDetail = () => {
   const [image, setImage] = useState(product?.image || "");
   const [price, setPrice] = useState(product?.price || 0);
   const [stock, setStock] = useState(product?.stock || 0);
-  const [description, setDescription] = useState(product?.description);
+  const [description, setDescription] = useState(product?.description || '');
   const [category, setCategory] = useState({
     id: product?.category?.id || "",
     name: product?.category?.name || "",
@@ -99,7 +99,7 @@ const ProductDetail = () => {
     setImage(data[2] || "");
     setPrice(data[4] || 0);
     setStock(data[5] || 0);
-    setDescription(data[6]);
+    setDescription(data[6] || "");
     setCategory({
       id: data[7] || "",
       name: data[3] || "",
@@ -119,7 +119,7 @@ const ProductDetail = () => {
 
   const handleSaveProduct = async () => {
     let isError = false;
-    if (!name) {
+    if (!name || name.trim() === '') {
       setErrorNameText(EErrorText.Empty("Tên mặt hàng"));
       isError = true;
     } else {
@@ -178,7 +178,7 @@ const ProductDetail = () => {
     setImage(data[2] || "");
     setPrice(data[4] || 0);
     setStock(data[5] || 0);
-    setDescription(data[6]);
+    setDescription(data[6] || "");
     setCategory({
       id: data[7] || "",
       name: data[3] || "",
