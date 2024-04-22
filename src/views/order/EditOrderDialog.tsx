@@ -54,7 +54,7 @@ const EditOrderDialog: React.FC<Props> = ({
   const [importOrderProducts, setImportOrderProducts] = useState<
     ImportOrderProduct[]
   >(order?.importOrderProducts || []);
-  const [code, setCode] = useState<string>(order?.code || '');
+  const [code, setCode] = useState<string>(order?.code || "");
   const [note, setNote] = useState<string>(order?.note || "");
   const [orderData, setOrderData] = useState<ImportOrder>(
     order || {
@@ -73,14 +73,13 @@ const EditOrderDialog: React.FC<Props> = ({
   const [supplier, setSupplier] = useState<Supplier>(order?.supplier);
   const [status, setStatus] = useState<Status>(order?.status);
   const [employee, setEmployee] = useState<Employee>(order?.employee);
-  const [errorCodeText, setErrorCodeText] = useState<string>('')
-  const [errorNoteText, setErrorNoteText] = useState<string>('')
-  const [errorEmployeeText, setErrorEmployeeText] = useState<string>('')
-  const [errorSupplierText, setErrorSupplierText] = useState<string>('')
-  const [errorStatusText, setErrorStatusText] = useState<string>('')
+  const [errorCodeText, setErrorCodeText] = useState<string>("");
+  const [errorNoteText, setErrorNoteText] = useState<string>("");
+  const [errorEmployeeText, setErrorEmployeeText] = useState<string>("");
+  const [errorSupplierText, setErrorSupplierText] = useState<string>("");
+  const [errorStatusText, setErrorStatusText] = useState<string>("");
 
   const disabled = status?.id === 1;
-  console.log(disabled);
 
   const fetchImportOrderData = async (id: number) => {
     await ClientCtr.getImportOrder(id)
@@ -166,82 +165,79 @@ const EditOrderDialog: React.FC<Props> = ({
   };
 
   const selectionContainer = (selection: JSX.Element, errorText: string) => {
-    return <BlockStack>
-      {selection}
-      {errorText && errorText !== '' && (
-              <div className="Polaris-Labelled__Error">
-                <div id=":r73:Error" className="Polaris-InlineError">
-                  <div className="Polaris-InlineError__Icon">
-                    <span className="Polaris-Icon">
-                      <svg
-                        viewBox="0 0 20 20"
-                        className="Polaris-Icon__Svg"
-                        focusable="false"
-                        aria-hidden="true"
-                      >
-                        <path d="M10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75Z"></path>
-                        <path d="M11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path>
-                        <path
-                          fill-rule="evenodd"
-                          d="M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Zm-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z"
-                        ></path>
-                      </svg>
-                    </span>
-                  </div>
-                  {errorText}
-                </div>
+    return (
+      <BlockStack>
+        {selection}
+        {errorText && errorText !== "" && (
+          <div className="Polaris-Labelled__Error">
+            <div id=":r73:Error" className="Polaris-InlineError">
+              <div className="Polaris-InlineError__Icon">
+                <span className="Polaris-Icon">
+                  <svg
+                    viewBox="0 0 20 20"
+                    className="Polaris-Icon__Svg"
+                    focusable="false"
+                    aria-hidden="true"
+                  >
+                    <path d="M10 6a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75Z"></path>
+                    <path d="M11 13a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path>
+                    <path
+                      fill-rule="evenodd"
+                      d="M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Zm-1.5 0a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0Z"
+                    ></path>
+                  </svg>
+                </span>
               </div>
-            )}
-    </BlockStack>
-  }
+              {errorText}
+            </div>
+          </div>
+        )}
+      </BlockStack>
+    );
+  };
 
-  const validateData = () : boolean => {
-    let valid = true
+  const validateData = (): boolean => {
+    let valid = true;
     if (importOrderProducts.length === 0) {
       setShowErr(true);
-      valid = false
+      valid = false;
     }
-    if (!code || code.trim() === '') {
+    if (!code || code.trim() === "") {
       setErrorCodeText("Mã vận đơn không được để trống");
-      valid = false
-    }
-    else {
-      setErrorCodeText('')
+      valid = false;
+    } else {
+      setErrorCodeText("");
     }
 
     if (note.length > 500) {
       setErrorNoteText("Ghi chú không được vượt quá 500 ký tự");
-      valid = false
-    }
-    else {
-      setErrorNoteText('')
+      valid = false;
+    } else {
+      setErrorNoteText("");
     }
 
     if (!supplier) {
-      setErrorSupplierText("Nhà cung cấp không được để trống")
-      valid = false
-    }
-    else {
-      setErrorSupplierText('')
+      setErrorSupplierText("Nhà cung cấp không được để trống");
+      valid = false;
+    } else {
+      setErrorSupplierText("");
     }
 
     if (!employee) {
-      setErrorEmployeeText("Nhân viên không được để trống")
-      valid = false
-    }
-    else {
-      setErrorEmployeeText('')
+      setErrorEmployeeText("Nhân viên không được để trống");
+      valid = false;
+    } else {
+      setErrorEmployeeText("");
     }
 
     if (!status) {
-      setErrorStatusText("Trạng thái không được để trống")
-      valid = false
+      setErrorStatusText("Trạng thái không được để trống");
+      valid = false;
+    } else {
+      setErrorStatusText("");
     }
-    else {
-      setErrorStatusText('')
-    }
-    return valid
-  }
+    return valid;
+  };
 
   const handleUpdateItem = (data: ImportOrderProduct, id?: number) => {
     if (data?.product && data?.quantity) {
@@ -275,9 +271,8 @@ const EditOrderDialog: React.FC<Props> = ({
 
   const handleSubmit = async () => {
     if (!validateData()) {
-      return
+      return;
     }
-
 
     const newOrder = {
       id: order?.id,
@@ -315,7 +310,7 @@ const EditOrderDialog: React.FC<Props> = ({
         primaryAction={{
           content: "Lưu",
           onAction: handleSubmit,
-          disabled
+          disabled,
         }}
         secondaryActions={[
           {
@@ -349,24 +344,29 @@ const EditOrderDialog: React.FC<Props> = ({
                       error={errorCodeText}
                       disabled={disabled}
                       id="delivery-code"
+                      requiredIndicator
                     />
                   </Grid.Cell>
                 </Grid>
-                {selectionContainer(<Select
-                  id="supplier-select"
-                  label="Nhà cung cấp"
-                  options={listSupplier.map((item: Supplier) => {
-                    return {
-                      label: item.name || "",
-                      value: JSON.stringify(item),
-                    };
-                  })}
-                  value={JSON.stringify(supplier)}
-                  onChange={(value) => setSupplier(JSON.parse(value))}
-                  placeholder="Chọn nhà cung cấp"
-                  disabled={disabled}
-                />, errorSupplierText)}
-                
+                {selectionContainer(
+                  <Select
+                    requiredIndicator
+                    id="supplier-select"
+                    label="Nhà cung cấp"
+                    options={listSupplier.map((item: Supplier) => {
+                      return {
+                        label: item.name || "",
+                        value: JSON.stringify(item),
+                      };
+                    })}
+                    value={JSON.stringify(supplier)}
+                    onChange={(value) => setSupplier(JSON.parse(value))}
+                    placeholder="Chọn nhà cung cấp"
+                    disabled={disabled}
+                  />,
+                  errorSupplierText
+                )}
+
                 <TextField
                   id="note"
                   label="Ghi chú"
@@ -382,36 +382,43 @@ const EditOrderDialog: React.FC<Props> = ({
             </Grid.Cell>
             <Grid.Cell columnSpan={{ xs: 6, md: 2, lg: 4 }}>
               <BlockStack gap={"400"}>
-                {selectionContainer(<Select
-                  id="employee-select"
-                  label="Nhân viên nhập hàng"
-                  options={listEmployee.map((item: Employee) => {
-                    return {
-                      label: item.id + " - " + item.name || "",
-                      value: JSON.stringify(item),
-                    };
-                  })}
-                  value={JSON.stringify(employee)}
-                  onChange={(value) => setEmployee(JSON.parse(value))}
-                  placeholder="Chọn nhân viên"
-                  disabled={disabled}
-                />, errorEmployeeText)}
-                
-                {selectionContainer(<Select
-                  id="status-select"
-                  label="Trạng thái đơn hàng"
-                  options={listStatus.map((item: Status) => {
-                    return {
-                      label: item.name || "",
-                      value: JSON.stringify(item),
-                    };
-                  })}
-                  value={JSON.stringify(status)}
-                  onChange={(value) => setStatus(JSON.parse(value))}
-                  placeholder="Chọn trạng thái"
-                  disabled={disabled}
-                />, errorStatusText)}
-                
+                {selectionContainer(
+                  <Select
+                    requiredIndicator
+                    id="employee-select"
+                    label="Nhân viên nhập hàng"
+                    options={listEmployee.map((item: Employee) => {
+                      return {
+                        label: item.id + " - " + item.name || "",
+                        value: JSON.stringify(item),
+                      };
+                    })}
+                    value={JSON.stringify(employee)}
+                    onChange={(value) => setEmployee(JSON.parse(value))}
+                    placeholder="Chọn nhân viên"
+                    disabled={disabled}
+                  />,
+                  errorEmployeeText
+                )}
+
+                {selectionContainer(
+                  <Select
+                    requiredIndicator
+                    id="status-select"
+                    label="Trạng thái đơn hàng"
+                    options={listStatus.map((item: Status) => {
+                      return {
+                        label: item.name || "",
+                        value: JSON.stringify(item),
+                      };
+                    })}
+                    value={JSON.stringify(status)}
+                    onChange={(value) => setStatus(JSON.parse(value))}
+                    placeholder="Chọn trạng thái"
+                    disabled={disabled}
+                  />,
+                  errorStatusText
+                )}
 
                 <TextField
                   id="total-price"
