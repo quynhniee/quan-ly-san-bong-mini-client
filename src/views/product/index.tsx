@@ -140,7 +140,7 @@ const ProductsManagement = () => {
   const handleSearch = async (key: string) => {
     await ClientCtr.getProductsByNameContaining(key)
       .then((res) => {
-        setDisplayRows(res.data)
+        setDisplayRows(res.data?.reverse())
         setSortedRows(
           sortTable(formatToDataTable(res?.data || []), 0, "ascending")
         );

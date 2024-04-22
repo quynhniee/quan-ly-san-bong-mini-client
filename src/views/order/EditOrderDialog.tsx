@@ -139,7 +139,7 @@ const EditOrderDialog: React.FC<Props> = ({
       <div style={{ minWidth: "70px" }}>
         <ButtonGroup>
           <Button
-            disabled={disabled}
+            disabled={disabled || item.product.deleted}
             icon={EditIcon}
             onClick={() => handleClickEdit(item)}
             id="edit-order-product-btn"

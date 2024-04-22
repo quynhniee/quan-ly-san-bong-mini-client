@@ -58,25 +58,26 @@ const OrdersPage = () => {
             : setSelectedRows((prev: any) => [...prev, item.id]);
         }}
       />,
-      <div style={{ textAlign: "center" }}>
-        {item.id}
-      </div>,
+      <div style={{ textAlign: "center" }}>{item.id}</div>,
       <div style={{ textAlign: "center" }}>{item.code}</div>,
       moment(item.createdAt).format("YYYY-MM-DD"),
       item.supplier.name,
       item.status.name,
-      <div>{ moment(item.updatedAt).format("hh:mm A / YYYY-MM-DD")}</div>
+      <div>{moment(item.updatedAt).format("hh:mm A / YYYY-MM-DD")}</div>,
     ]);
   };
 
   // Get all orders data
   const fetchData = async () => {
-    await ClientCtr.getAllImportOrders().then((response) => {
-      const orderList = response?.data;
-      setItems(orderList);
-      setDisplayOrders(orderList.slice(0, itemsPerPage));
-    }).catch((error) => {alert(error)});
-    
+    await ClientCtr.getAllImportOrders()
+      .then((response) => {
+        const orderList = response?.data;
+        setItems(orderList);
+        setDisplayOrders(orderList.slice(0, itemsPerPage));
+      })
+      .catch((error) => {
+        alert(error);
+      });
   };
 
   useEffect(() => {
@@ -89,11 +90,42 @@ const OrdersPage = () => {
   };
 
   const handleEditItem = () => {
-    const item = items.find(item => item.id === selectedRows[0]);
+    const item = items.find((item) => item.id === selectedRows[0]);
     setOrder(item);
     setOpen(true);
   };
 
+  useEffect(() => {
+    const rows: NodeListOf<HTMLElement> = document.querySelectorAll(
+      ".Polaris-DataTable__TableRow"
+    );
+
+    rows.forEach((row, index) => {
+      row.style.cursor = "pointer";
+
+      row.onclick = (e) => {
+        if (
+          (e.target as any)?.classList[0] === "Polaris-Checkbox__Input" ||
+          (e.target as any)?.classList[0] === "Polaris-Checkbox__Backdrop"
+        ) {
+        } else {
+          setSelectedRows((prev: number[]) =>
+            prev.find((rowId: any) => rowId === items[index].id)
+              ? prev.filter((rowId: any) => rowId !== Number(items[index].id))
+              : [...prev, Number(items[index].id)]
+          );
+        }
+      };
+
+      row.ondblclick = (e) => {
+        e.preventDefault();
+
+        setOrder(items[index]);
+        setOpen(true);
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, selectedRows]);
 
   return (
     <Page
@@ -107,10 +139,10 @@ const OrdersPage = () => {
       }}
       fullWidth
     >
-      <Box paddingBlockEnd={'400'}>
-        <InlineStack gap={'400'} >
+      <Box paddingBlockEnd={"400"}>
+        <InlineStack gap={"400"}>
           <Button
-            onClick={() => setSelectedRows(displayOrders.map(o => o.id))}
+            onClick={() => setSelectedRows(displayOrders.map((o) => o.id))}
             disabled={selectedRows.length === displayOrders.length}
           >
             Chọn tất cả
@@ -121,18 +153,18 @@ const OrdersPage = () => {
           >
             Bỏ chọn
           </Button>
-          
         </InlineStack>
       </Box>
-      <Card padding={'0'}>
+      <Card padding={"0"}>
         <DataTable
+          hoverable
           columnContentTypes={["text", "text", "text", "text", "text"]}
           headings={headings}
           rows={formatToRowData(displayOrders)}
           truncate
         />
       </Card>
-      
+
       {selectedRows.length > 0 && (
         <div
           style={{
@@ -162,7 +194,7 @@ const OrdersPage = () => {
             onClick={() => {
               openModal(EModal.MODAL_DELETE_PRODUCT, {
                 data: { selectedRows, setSelectedRows },
-              })
+              });
             }}
           >
             Xoá đơn hàng
