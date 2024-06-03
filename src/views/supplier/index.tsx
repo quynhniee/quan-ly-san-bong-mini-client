@@ -1,105 +1,252 @@
-import { Page } from "@shopify/polaris";
-import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import SupplierDetailModal from "./SupplierDetailModal";
-import SupplierDataTable from "./SupplierDataTable";
-import axios from "axios";
-import { SUPPLIER_API } from "../../constants/api";
+import React, { useEffect, useState } from "react";
+import {
+  Page,
+  Card,
+  DataTable,
+  Button,
+  ButtonGroup,
+  InlineStack,
+  Checkbox,
+  Box,
+  TextField,
+} from "@shopify/polaris";
+import moment from "moment";
 import { Supplier } from "../../interface";
-import SkeletonIndexTable from "../../components/Skeleton/skeleton-table";
+import { useNavigate } from "react-router-dom";
+import ModalDeleteProduct from "../product/modal/modal-delete-product";
+import { useModal } from "../../hook/useModal";
+import { EModal } from "../../constants";
+import ClientCtr from "../../ClientCtr";
+import EditSupplierDialog from './EditSupplierDialog';
+import ModalDeleteSupplier from '../product/modal/modal-delete-supplier';
 
-const SupplierPage = () => {
+const SuppliersPage = () => {
+  const { openModal, state: stateModal } = useModal();
+  const [open, setOpen] = useState<boolean>(false);
+  const [items, setItems] = useState<Array<Supplier>>([]);
+  const [displayOrders, setDisplayOrders] = useState<Array<Supplier>>([]);
+  const [supplier, setOrder] = useState<any>();
+  const [page, setPage] = useState<number>(0);
+  const [selectedRows, setSelectedRows] = useState<number[]>([]);
+  const itemsPerPage = 1000;
+  const [searchProduct, setSearchProduct] = useState<string>("");
   const navigate = useNavigate();
-  const [initTable, setInitTable] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [isActiveAddModal, setIsActiveAddModal] = useState(false);
-  const [suppliers, setSuppliers] = useState<any[]>([]);
-  const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [pagesNumber, setPagesNumber] = useState(0);
-  const [supplierData, setSupplierData] = useState<Supplier | undefined>();
-  const [loadingModal, setLoadingModal] = useState(false);
 
-  const onDismissAddModal = () => setIsActiveAddModal(false);
-  const onOpenAddModal = () => setIsActiveAddModal(true);
+  const headings = [
+    "",
+    <div>ID</div>,
+    <div>Tên nhà cung cấp</div>,
+    <div style={{ textAlign: "left" }}>Email</div>,
+    <div style={{ textAlign: "left" }}>Mã số thuế</div>,
+    <div style={{ textAlign: "left" }}>Địa chỉ</div>,
 
-  const fetchSuppliers = useCallback(async () => {
-    await axios
-      .get(`${SUPPLIER_API}?page=${pageIndex}&size=${pageSize}`)
-      .then((response) => response.data)
-      .then((response) => response.data)
+  ];
+
+  const formatToRowData = (data: Supplier[]) => {
+    return data.map((item: Supplier, index: number) => [
+      <Checkbox
+        name=""
+        value=""
+        label=""
+        labelHidden
+        checked={
+          selectedRows.find((rowId: any) => rowId === item.id) ? true : false
+        }
+        onChange={(v: boolean) => {
+          !v
+            ? setSelectedRows((prev: any) =>
+                prev.filter((rowId: any) => rowId !== item.id)
+              )
+            : setSelectedRows((prev: any) => [...prev, item.id]);
+        }}
+      />,
+      <div>{item.id}</div>,
+      <div>{item.name}</div>,
+      <div>{item.email}</div>,
+      <div>{item.taxCode}</div>,
+      <div>{item.address}</div>,
+     
+    ]);
+  };
+
+  // Get all suppliers data
+  const fetchData = async () => {
+    await ClientCtr.getAllSuppliers()
       .then((response) => {
-        console.log(response);
-        const metadata = response.metadata;
-        setPagesNumber(metadata.totalPages);
-        setSuppliers(response.data);
-        if (pageIndex > metadata.totalPages - 1) {
-          setPageIndex(metadata.totalPages - 1);
-        } else setPageIndex(metadata.page);
+        const supplierList = response?.data;
+        setItems(supplierList);
+        setDisplayOrders(supplierList.slice(0, itemsPerPage));
       })
       .catch((error) => {
-        console.log(error);
+        alert(error);
       });
-  }, [pageIndex, pageSize]);
-
-  const onViewSupplier = async (id: number) => {
-    setLoadingModal(true);
-    onOpenAddModal();
-    const response = await axios.get(`${SUPPLIER_API}/${id}`);
-    const data = response.data;
-    if (data.status === 200) {
-      setSupplierData(data.data);
-      setLoadingModal(false);
-    }
   };
 
   useEffect(() => {
-    console.log("render");
-    setLoading(true);
-    fetchSuppliers().then(() => {
-      setLoading(false);
-      setInitTable(false);
+    fetchData();
+  }, [open, page, selectedRows]);
+
+  const handleSearch = async (key: string) => {
+    if (key) {
+
+      const response = await ClientCtr.getSuppliersByNameContaining(key);
+      const newOrders = response?.data;
+    
+      setDisplayOrders(newOrders);
+    } else {
+      setDisplayOrders(items.slice(page * itemsPerPage, (page + 1) * itemsPerPage));
+    }
+  };
+
+  const handleAddItem = () => {
+    setOrder(undefined);
+    setOpen(true);
+  };
+
+  const handleEditItem = () => {
+    const item = items.find((item) => item.id === selectedRows[0]);
+    setOrder(item);
+    setOpen(true);
+  };
+
+  useEffect(() => {
+    const rows: NodeListOf<HTMLElement> = document.querySelectorAll(
+      ".Polaris-DataTable__TableRow"
+    );
+
+    rows.forEach((row, index) => {
+      row.style.cursor = "pointer";
+
+      row.onclick = (e) => {
+        if (
+          (e.target as any)?.classList[0] === "Polaris-Checkbox__Input" ||
+          (e.target as any)?.classList[0] === "Polaris-Checkbox__Backdrop"
+        ) {
+        } else {
+          setSelectedRows((prev: number[]) =>
+            prev.find((rowId: any) => rowId === items[index].id)
+              ? prev.filter((rowId: any) => rowId !== Number(items[index].id))
+              : [...prev, Number(items[index].id)]
+          );
+        }
+      };
+
+      row.ondblclick = (e) => {
+        e.preventDefault();
+
+        setOrder(items[index]);
+        setOpen(true);
+      };
     });
-  }, [pageIndex, pageSize, initTable, fetchSuppliers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, selectedRows]);
 
   return (
     <Page
-      backAction={{ content: "supplier_back", url: "/" }}
+      backAction={{
+        onAction: () => navigate("/"),
+      }}
       title="Quản lý nhà cung cấp"
       primaryAction={{
         content: "Thêm nhà cung cấp",
-        onAction: () => setIsActiveAddModal(true),
+        onAction: () => handleAddItem(),
       }}
       fullWidth
     >
-      {initTable ? (
-        <SkeletonIndexTable number={4} />
-      ) : (
-        <>
-          <SupplierDataTable
-            suppliers={suppliers}
-            setSuppliers={setSuppliers}
-            pageIndex={pageIndex}
-            pagesNumber={pagesNumber}
-            setPageIndex={setPageIndex}
-            loading={loading}
-            setLoading={setLoading}
-            fetchSuppliers={fetchSuppliers}
-            onViewSupplier={onViewSupplier}
-          />
-          <SupplierDetailModal
-            loading={loadingModal}
-            setLoading={setLoadingModal}
-            active={isActiveAddModal}
-            onDismiss={onDismissAddModal}
-            supplier={supplierData}
-            setSupplier={setSupplierData}
-            fetchSuppliers={fetchSuppliers}
-          />
-        </>
+      <Box paddingBlockEnd={"400"}> 
+        <InlineStack gap={"400"} blockAlign="center">
+            <TextField
+              labelHidden
+              label=""
+              value={searchProduct}
+              onChange={async (v) => {
+                setSearchProduct(v);
+                handleSearch(v);
+              }}
+              onClearButtonClick={async () => {
+                setSearchProduct("");
+                fetchData();
+              }}
+              placeholder="Tìm kiếm nhà cung cấp..."
+              autoComplete=""
+              clearButton
+            />
+
+            <Button
+              onClick={() => setSelectedRows(displayOrders.map(row => row.id))}
+              disabled={selectedRows.length === displayOrders.length}
+              variant="secondary"
+            >
+              Chọn tất cả
+            </Button>
+            <Button
+              onClick={() => setSelectedRows([])}
+              disabled={!selectedRows.length}
+            >
+              Bỏ chọn
+            </Button>
+          </InlineStack>
+      </Box>
+      <Card padding={"0"}>
+        <DataTable
+          hoverable
+          columnContentTypes={["text", "text", "text", "text", "text"]}
+          headings={headings}
+          rows={formatToRowData(displayOrders)}
+          truncate
+        />
+      </Card>
+
+      {selectedRows.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            bottom: "15px",
+            background: "#fff",
+            paddingBlock: 8,
+            paddingInline: 12,
+            borderRadius: 8,
+            border: "1px solid #f1f1f1",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: "12px",
+          }}
+        >
+          <Button
+            variant="primary"
+            disabled={selectedRows.length > 1}
+            onClick={handleEditItem}
+          >
+            Sửa nhà cung cấp
+          </Button>
+          <Button
+            variant="primary"
+            tone="critical"
+            onClick={() => {
+              openModal(EModal.MODAL_DELETE_SUPPLIER, {
+                data: { selectedRows, setSelectedRows },
+              });
+            }}
+          >
+            Xoá nhà cung cấp
+          </Button>
+        </div>
       )}
+      {open && (
+        <EditSupplierDialog
+          supplier={supplier}
+          open={open}
+          fetchData={fetchData}
+          setSelectedRows={setSelectedRows} setOpen={setOpen}        />
+      )}
+      <ModalDeleteSupplier
+        selectedRows={selectedRows}
+        setSelectedRows={setSelectedRows}
+        type={"suppliers"}
+      />
     </Page>
   );
 };
 
-export default SupplierPage;
+export default SuppliersPage;

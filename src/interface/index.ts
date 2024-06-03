@@ -67,9 +67,9 @@ export interface Product {
 export interface Supplier {
   createdAt?: string | undefined;
   id: number;
-  name: string | undefined;
-  email: string | undefined;
-  phoneNumber: string | undefined;
+  name: string;
+  email: string ;
+  phoneNumber: string ;
   address: string | undefined;
   note: string | undefined;
   taxCode?: string | undefined;

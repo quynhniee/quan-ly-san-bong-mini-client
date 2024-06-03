@@ -3,7 +3,6 @@ import React, { Suspense } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { AppProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
-import HeaderBar from "./components/HeaderBar";
 import CustomSkeletonPage from "./components/Skeleton/skeleton-page";
 
 const Home = React.lazy(() => import("./views/Home"));
@@ -16,7 +15,6 @@ function App() {
     <AppProvider i18n={enTranslations}>
       <Router>
         <div>
-          <HeaderBar />
           <Suspense fallback={<CustomSkeletonPage/>}>
             <Routes>
               <Route path="/" element={<Home />} />

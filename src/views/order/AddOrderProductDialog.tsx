@@ -32,7 +32,8 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
   const [displayProducts, setDisplayProducts] = useState<Product[]>(
     data?.id ? [data?.product] : []
   );
-  const [importPrice, setImportPrice] = useState<number>(data?.importPrice || 0)
+  console.log(data?.product.price)
+  const [importPrice, setImportPrice] = useState<number>(data?.product.price || 0)
   const [quantity, setQuantity] = useState<number>(data?.quantity || 0)
 
   const fetchProductsData = async () => {
@@ -43,7 +44,7 @@ const AddOrderProductDialog: React.FC<AddOrderProductDialogProps> = ({
       setProducts(newProducts);
       setDisplayProducts(newProducts);
       setProduct(newProducts[0]);
-
+      setImportPrice(newProducts[0].price)
     }
   };
 

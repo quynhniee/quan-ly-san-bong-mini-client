@@ -18,7 +18,7 @@ import {
 } from "@shopify/polaris";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import moment from "moment";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import AddOrderProductDialog from "./AddOrderProductDialog";
 import {
   Employee,
@@ -79,7 +79,7 @@ const EditOrderDialog: React.FC<Props> = ({
   const [errorSupplierText, setErrorSupplierText] = useState<string>("");
   const [errorStatusText, setErrorStatusText] = useState<string>("");
 
-  const disabled = status?.id === 1;
+  const disabled = order?.status?.id === 1;
 
   const fetchImportOrderData = async (id: number) => {
     await ClientCtr.getImportOrder(id)
@@ -243,16 +243,19 @@ const EditOrderDialog: React.FC<Props> = ({
     if (data?.product && data?.quantity) {
       setShowErr(false);
       setAddProductDialog(false);
-
+      let isDuplicated = false
       const newOrderProducts = importOrderProducts?.map(
         (item: ImportOrderProduct) => {
           if (item.product.id === data.product.id) {
-            return item && data;
+            console.log(1)
+            isDuplicated = true
+            return {...item, quantity: item.quantity + data.quantity};
           }
+          console.log(2)
           return item;
         }
       );
-      orderProduct
+      isDuplicated
         ? setImportOrderProducts(newOrderProducts)
         : setImportOrderProducts(importOrderProducts.concat(data));
     } else {
@@ -273,23 +276,26 @@ const EditOrderDialog: React.FC<Props> = ({
     if (!validateData()) {
       return;
     }
+    try {
+      const newOrder = {
+        id: order?.id,
+        code,
+        payment,
+        employee,
+        supplier,
+        status,
+        note,
+        importOrderProducts,
+      };
 
-    const newOrder = {
-      id: order?.id,
-      code,
-      payment,
-      employee,
-      supplier,
-      status,
-      note,
-      importOrderProducts,
-    };
+      await ClientCtr.saveImportOrder(newOrder);
 
-    await ClientCtr.saveImportOrder(newOrder);
-
-    await fetchData();
-    setOpen(false);
-    setSelectedRows([]);
+      await fetchData();
+      setOpen(false);
+      setSelectedRows([]);
+    } catch (error: any) {
+      alert(error.response?.data);
+    }
   };
 
   return (

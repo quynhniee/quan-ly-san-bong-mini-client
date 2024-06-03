@@ -314,6 +314,10 @@ const ProductDetail = () => {
 
   useEffect(() => {
     setSaving(false)
+    setErrorNameText("");
+    setErrorPriceText("");
+    setErrorQuantityText("");
+    setErrorCategoryText("");
     console.log(0)
   }, [state])
 
